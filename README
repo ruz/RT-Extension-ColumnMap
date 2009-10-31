@@ -1,0 +1,10 @@
+NAME
+    RT::Extension::ColumnMap - bring ColumnMap to libraries
+
+DESCRIPTION
+LICENSE
+    Under the same terms as perl itself.
+
+AUTHOR
+    Ruslan Zakirov <Ruslan.Zakirov@gmail.com>
+
