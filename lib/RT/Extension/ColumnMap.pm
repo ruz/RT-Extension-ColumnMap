@@ -12,7 +12,8 @@ RT::Extension::ColumnMap - bring ColumnMap to libraries
 
 =head1 DESCRIPTION
 
-This extension provides API for other extensions and/or
+This extension provides API to turn ColumnMap like strings
+into values. It can be used in other extensions and/or
 local customizations.
 
 =cut

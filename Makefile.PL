@@ -4,6 +4,7 @@ all_from 'lib/RT/Extension/ColumnMap.pm';
 readme_from 'lib/RT/Extension/ColumnMap.pm';
 
 requires('Regexp::Common::delimited');
+requires('Regexp::Common::WithActions');
 
 my ($lib_path) = $INC{'RT.pm'} =~ /^(.*)[\\\/]/;
 my $local_lib_path = "$RT::LocalPath/lib";
@@ -16,4 +17,3 @@ substitute( {
 );
 
 WriteAll();
-
