@@ -27,6 +27,12 @@ $MAP{'RT::Record'} = {
 
     ( map { my $m = $_ .'Obj'; $_ => sub { return $_[0]->$m() } }
     qw(Created LastUpdated CreatedBy LastUpdatedBy) ),
+
+    CustomField => sub {
+        my $obj = shift;
+        my %args = @_;
+        return $obj->CustomFieldValues( @{ $args{'Arguments'}[0] } )
+    },
 };
 
 $MAP{'RT::Ticket'} = {
@@ -42,6 +48,15 @@ $MAP{'RT::Ticket'} = {
     ) ),
 };
 
+foreach my $type (qw(Requestor Cc AdminCc)) {
+    my $method = $type eq 'Requestor'? $type.'s': $type;
+    my $map = {
+        Trailing => sub { return $_[0]->$method()->UserMembersObj },
+        Default => sub { return $_[0]->$method() },
+    };
+    $MAP{'RT::Ticket'}{$type} = $MAP{'RT::Ticket'}{$type .'s'} = $map;
+}
+
 $MAP{'RT::Transaction'} = {
     ( map { my $m = $_; $_ => sub { return $_[0]->$m() } }
     qw(
@@ -51,14 +66,13 @@ $MAP{'RT::Transaction'} = {
     ) ),
 };
 
-foreach my $type (qw(Requestor Cc AdminCc)) {
-    my $method = $type eq 'Requestor'? $type.'s': $type;
-    my $map = {
-        Trailing => sub { return $_[0]->$method()->UserMembersObj },
-        Default => sub { return $_[0]->$method() },
-    };
-    $MAP{$type} = $MAP{$type .'s'} = $map;
-}
+$MAP{'RT::ObjectCustomFieldValue'} = {
+    ( map { my $m = $_; $_ => sub { return $_[0]->$m() } }
+    qw(Object Content) ),
+
+    ( map { my $m = $_ .'Obj'; $_ => sub { return $_[0]->$m() } }
+    qw(CustomField) ),
+};
 
 
 $MAP{'RT::User'} = {
@@ -127,7 +141,6 @@ sub FindStart {
         push @objects, \%tmp;
     }
     @objects = sort { @{$b->{struct}} <=> @{$b->{struct}} } @objects;
-    #Test::More::diag( Dumper( \@objects ) );
 
     my $prefix;
     foreach ( @objects ) {
@@ -186,12 +199,15 @@ sub _Check {
             unless blessed $value;
 
         if ( $value->isa('RT::SearchBuilder') ) {
+            my $executed = 0;
             while ( my $entry = $value->Next ) {
+                my $executed = 1;
                 my $res = $self->_Check(
                     Storable::dclone($struct), $entry, $checker
                 );
                 return $res if $res;
             }
+            return $checker->(undef) unless $executed;
         } elsif ( $value->isa('RT::Record') ) {
             return $self->_Check( $struct, $value, $checker );
         } else {

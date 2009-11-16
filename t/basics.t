@@ -3,11 +3,13 @@
 use strict;
 use warnings;
 
-use RT::Extension::ColumnMap::Test tests => 9;
+use RT::Extension::ColumnMap::Test tests => 8;
 
 {
     my $ticket = RT::Ticket->new($RT::SystemUser);
-    my ($tid, $msg) = $ticket->Create( Queue => 'General', Subject => 'test' );
+    my ($tid, $msg) = $ticket->Create(
+        Queue => 'General', Subject => 'test'
+    );
     ok( RT::Extension::ColumnMap->Check(
         String => 'Subject',
         Objects => {'' => $ticket},
